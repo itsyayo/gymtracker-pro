@@ -1,4 +1,3 @@
-// src/app/onboarding/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -10,13 +9,12 @@ export default function OnboardingPage() {
   const { data: session, status } = useSession();
   const [isSaving, setIsSaving] = useState(false);
 
-  // Estado del formulario
   const [formData, setFormData] = useState({
     age: "",
     heightCm: "",
     currentWeightKg: "",
     medicalConditions: "",
-    primaryGoal: "HIPERTROFIA", // Valor por defecto
+    primaryGoal: "HIPERTROFIA",
     targetWeightKg: "",
     targetWaistCm: ""
   });
@@ -32,7 +30,6 @@ export default function OnboardingPage() {
     });
 
     if (res.ok) {
-      // ¡Perfil guardado! Lo mandamos al dashboard
       router.push("/dashboard");
     } else {
       alert("Hubo un error al guardar tu perfil. Intenta de nuevo.");
