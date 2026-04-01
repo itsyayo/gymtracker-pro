@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  COACH
+  ATHLETE
+}
+
+enum MuscleGroup {
+  CHEST
+  BACK
+  LEGS
+  SHOULDERS
+  ARMS
+  CORE
+}
+
+enum ActivityType {
+  STRENGTH   // Pesas de gimnasio
+  CARDIO     // Correr, bici
+  SWIMMING   // Natación
+  OTHER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(ATHLETE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  authoredRoutines Routine[] @relation("CoachAuthored")
+  athletes       User[]    @relation("CoachAthlete")
+  coachId        String?
+  coach          User?     @relation("CoachAthlete", fields: [coachId], references: [id])
+  workoutSessions WorkoutSession[]
+  assignedRoutines Routine[] @relation("UserAssignedRoutines")
+
+  profile          AthleteProfile?
+}
+
+model AthleteProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Datos Biométricos
+  age               Int?
+  heightCm          Float?
+  currentWeightKg   Float?
+  medicalConditions String?
+  
+  // Metas
+  primaryGoal       String?
+  targetWeightKg    Float?
+  targetWaistCm     Float?
+  
+  updatedAt         DateTime @updatedAt
+}
+
+model Exercise {
+  id          String      @id @default(cuid())
+  name        String
+  muscleGroup MuscleGroup
+  routineEntries RoutineExercise[]
+  logs           SetLog[]
+  videoUrl    String?
+
+  activityType ActivityType @default(STRENGTH)
+}
+
+model Routine {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  authorId    String
+  author      User     @relation("CoachAuthored", fields: [authorId], references: [id])
+  exercises   RoutineExercise[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assignedToUsers User[] @relation("UserAssignedRoutines")
+}
+
+model RoutineExercise {
+  id          String   @id @default(cuid())
+  routineId   String
+  routine     Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  exerciseId  String
+  exercise    Exercise @relation(fields: [exerciseId], references: [id])
+  orderIndex  Int
+  targetSets  Int
+  targetReps  String
+  targetRPE   Float?
+}
+
+model WorkoutSession {
+  id          String   @id @default(cuid())
+  athleteId   String
+  athlete     User     @relation(fields: [athleteId], references: [id])
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  athleteNotes String?
+  sets        SetLog[]
+}
+
+model SetLog {
+  id          String   @id @default(cuid())
+  sessionId   String
+  session     WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseId  String
+  exercise    Exercise @relation(fields: [exerciseId], references: [id])
+  setNumber   Int
+  weightKg    Float?
+  reps        Int?
+  rpe         Float?
+  estimated1RM Float?
+
+  distanceMeters   Float?
+  durationSeconds  Int?
+
+  performedAt DateTime @default(now())
+}
