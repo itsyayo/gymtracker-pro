@@ -1,4 +1,3 @@
-// src/app/api/profile/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
@@ -18,7 +17,6 @@ export async function POST(request: Request) {
       primaryGoal, targetWeightKg, targetWaistCm 
     } = body;
 
-    // Usamos Upsert para crear o actualizar el perfil en una sola operación
     const profile = await prisma.athleteProfile.upsert({
       where: { userId: session.user.id },
       update: {
